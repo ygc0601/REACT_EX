@@ -1,5 +1,84 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import './App.css'
+
+const DEMO_ID = 'admin'
+const DEMO_PASSWORD = '1234'
+
+type LoginPageProps = { onLogin: () => void }
+
+function LoginPage({ onLogin }: LoginPageProps) {
+  const [id, setId] = useState('')
+  const [password, setPassword] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!id || !password) {
+      setErrorMessage('아이디와 비밀번호를 모두 입력해 주세요.')
+      return
+    }
+
+    if (id !== DEMO_ID || password !== DEMO_PASSWORD) {
+      setErrorMessage('아이디 또는 비밀번호가 올바르지 않습니다.')
+      return
+    }
+
+    setErrorMessage('')
+    onLogin()
+  }
+
+  return (
+    <main className="login-main">
+      <section className="login-panel" aria-labelledby="login-title">
+        <span className="badge">React State 로그인 예제</span>
+        <h1 id="login-title">로그인</h1>
+        <p>예제 화면을 확인하려면 데모 계정으로 로그인해 주세요.</p>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="form-field">
+            <label htmlFor="login-id">아이디</label>
+            <input
+              id="login-id"
+              name="id"
+              autoComplete="username"
+              value={id}
+              onChange={(event) => setId(event.target.value)}
+              aria-describedby={errorMessage ? 'login-error' : undefined}
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="login-password">비밀번호</label>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              aria-describedby={errorMessage ? 'login-error' : undefined}
+            />
+          </div>
+
+          {errorMessage && (
+            <p className="error-message" id="login-error" role="alert">
+              {errorMessage}
+            </p>
+          )}
+
+          <button className="login-button" type="submit">로그인</button>
+        </form>
+
+        <aside className="demo-account" aria-label="데모 계정 안내">
+          <strong>데모 계정</strong>
+          <span>아이디: admin</span>
+          <span>비밀번호: 1234</span>
+        </aside>
+      </section>
+    </main>
+  )
+}
 
 type WelcomeCardProps = { name: string }
 
@@ -79,7 +158,12 @@ function AboutPage({ onOpenHome }: AboutPageProps) {
 }
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [page, setPage] = useState<'home' | 'about'>('home')
+
+  if (!isLoggedIn) {
+    return <LoginPage onLogin={() => setIsLoggedIn(true)} />
+  }
 
   return (
     <>
@@ -88,6 +172,15 @@ function App() {
         <nav aria-label="주요 메뉴">
           <button onClick={() => setPage('home')}>실습</button>
           <button onClick={() => setPage('about')}>개념</button>
+          <button
+            className="logout-button"
+            onClick={() => {
+              setPage('home')
+              setIsLoggedIn(false)
+            }}
+          >
+            로그아웃
+          </button>
         </nav>
       </header>
       {page === 'home' ? (
